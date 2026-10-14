@@ -1,0 +1,48 @@
+# poidh signer
+# Submits the claim requests agents file in omac049/poidh-proofs, signing with the agent
+# wallet key held in this repository's POIDH_AGENT_KEY secret.
+# Claude must have no access to this repository, or it could change this file.
+#
+# CODE_COMMIT pins the agent code this workflow runs. Change it only after reading what
+# changed in omac049/poidh-proofs since the commit set here.
+name: poidh signer
+
+on:
+  schedule:
+    - cron: '11,41 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Check everything without sending
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: poidh-signer
+  cancel-in-progress: false
+
+jobs:
+  sign:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CODE_COMMIT: REPLACE_WITH_REVIEWED_COMMIT
+    steps:
+      - name: Fetch the pinned agent code and the latest requests
+        run: |
+          node --version
+          git init -q code
+          git -C code fetch -q --depth 1 https://github.com/omac049/poidh-proofs "$CODE_COMMIT"
+          git -C code checkout -q FETCH_HEAD
+          git clone -q --depth 1 https://github.com/omac049/poidh-proofs data
+      - name: Install the pinned dependency
+        working-directory: code/agent
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Withdraw winnings and submit claim requests
+        working-directory: code/agent
+        env:
+          POIDH_AGENT_KEY: ${{ secrets.POIDH_AGENT_KEY }}
+          SIGNER_DRY_RUN: ${{ inputs.dry_run == true }}
+        run: node sign-requests.mjs ../../data/requests

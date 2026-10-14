@@ -1,0 +1,9 @@
+{
+  "name": "poidh-agent",
+  "private": true,
+  "type": "module",
+  "description": "Submits poidh claims and withdraws winnings from the agent wallet, with guardrails.",
+  "dependencies": {
+    "viem": "2.56.9"
+  }
+}
