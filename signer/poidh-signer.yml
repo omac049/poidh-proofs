@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      CODE_COMMIT: 201e4964ffa7f11454bddcc25df5b0985b99bdd8
+      CODE_COMMIT: 18e1c13b19198a136b21ac719f6ba002caa162e9
     steps:
       - name: Fetch the pinned agent code and the latest requests
         run: |
@@ -88,7 +88,7 @@ jobs:
             cp "$f" "$R/$n"
           done
           cd "$R"
-          git add -A -- '*.json'
+          git add -A
           git diff --cached --quiet && { echo "no new post records"; exit 0; }
           git -c user.name=poidh-signer -c user.email=poidh-signer@users.noreply.github.com commit -qm "Record X posts"
           git -c http.extraheader="$auth" push -q "https://github.com/$GITHUB_REPOSITORY" HEAD:refs/heads/post-records
