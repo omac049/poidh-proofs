@@ -38,6 +38,7 @@ v=$(cd $T/agent && node -e "import('./x.mjs').then(({oauthHeader:o,postWeight:w}
 mkdir -p $T/requests $T/posts
 req $T/requests/base-101.json '{"chain":"base","bounty":101,"title":"t","description":"What the agent did.","proof_uri":"'$IMG'","post":{"text":"Agent post for poidh bounty 101 @poidhxyz https://poidh.xyz/base/bounty/101","media_uri":"'$IMG'"}}'
 run $T/rec1 0 SIGNER_DRY_RUN=true
+has "dry run names the X account the keys post as" "posting to X: on, as @test_agent"
 has "dry run would post with the image" "base-101.json: dry run, would post"
 has "dry run passes the claim" "base-101.json: dry run passed"
 [ "$(posts)" = 0 ] && [ -z "$(ls $T/rec1)" ] && ok "dry run posted nothing" || no "dry run posted"
@@ -54,6 +55,7 @@ req $T/posts/mainnet-37.json '{"chain":"mainnet","bounty":37,"post":{"text":"I s
 req $T/posts/base-404.json '{"chain":"base","bounty":404,"post":{"text":"closed bounty"}}'
 req $T/posts/arbitrum-5.json '{"chain":"arbitrum","bounty":5,"post":{"text":"wrong chain"}}'
 run $T/rec1 0
+has "real run says posting is on" "posting to X: on"
 has "post made before the claim" "base-101.json: posted https://x.com/i/status/"
 has "claim made after the post" "base-101.json: claimed, claim 1"
 if grep '"cmd":"claim"' $T/stub.log | grep '"bounty":"101"' | grep -v dry-run | grep -q 'Post on X: https://x.com/i/status/9'; then ok "claim description carries the post link"; else no "claim description lacks the post link"; fi
@@ -106,10 +108,14 @@ has "X refusal reported" "posts/base-601.json: X refused the post (HTTP 403, For
 req $T/posts/base-601.json '{"chain":"base","bounty":601,"post":{"text":"wrong keys"}}'
 run $T/rec2 1 X_API_SECRET=cs-wrong-0000
 has "bad keys reported" "posts/base-601.json: X refused the post (HTTP 401, Unauthorized: Unauthorized)"
+run $T/rec2 1 SIGNER_DRY_RUN=true X_API_SECRET=cs-wrong-0000
+has "dry run catches bad keys" "posting to X: X did not accept the keys (HTTP 401, Unauthorized: Unauthorized)"
 run $T/rec2 0 X_ACCESS_TOKEN_SECRET=
 has "missing keys switch posting off" "posts/base-601.json: skipped, posting to X is not set up (X keys missing)"
+has "missing keys reported up front" "posting to X: off, X keys missing"
 out=$(env -u POST_RECORDS_DIR node $T/agent/sign-requests.mjs $T/requests $T/posts 2>&1); echo "$out" >> $LOG
 has "no records folder switches posting off" "posting needs POST_RECORDS_DIR"
+has "no records folder reported up front" "posting to X: off, no POST_RECORDS_DIR"
 [ "$(posts)" = 3 ] && ok "no posts from refused or unconfigured runs" || no "posts: $(posts)"
 
 # ---- secrets ----

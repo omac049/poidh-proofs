@@ -18,7 +18,7 @@ import { readdirSync, readFileSync, writeFileSync, lstatSync, appendFileSync } f
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
-import { xKeys, xSecretValues, postWeight, uploadImage, createPost, XError, MAX_POST_WEIGHT } from './x.mjs';
+import { xKeys, xSecretValues, postWeight, uploadImage, createPost, whoAmI, XError, MAX_POST_WEIGHT } from './x.mjs';
 
 const CHAINS = (process.env.SIGNER_CHAINS || 'base').split(',').map((c) => c.trim()).filter(Boolean);
 const POST_CHAINS = (process.env.POST_CHAINS || 'base,mainnet').split(',').map((c) => c.trim()).filter(Boolean);
@@ -202,6 +202,16 @@ const safeLabel = (name) => (/^[\w.-]{1,80}$/.test(name) ? name : '(file with an
 let failed = false;
 note(`poidh signer${DRY_RUN ? ' (dry run)' : ''}`);
 loadRecords();
+
+// Say whether posting is on. A dry run also asks X which account the keys post as.
+const X_KEYS = xKeys();
+if (!X_KEYS) note('posting to X: off, X keys missing');
+else if (!RECORDS) note('posting to X: off, no POST_RECORDS_DIR');
+else if (!DRY_RUN) note('posting to X: on');
+else {
+  try { note(`posting to X: on, as @${await whoAmI(X_KEYS)}`); }
+  catch (e) { note(`posting to X: ${e instanceof XError ? e.message : `error, ${e.message}`}`); failed = true; }
+}
 
 for (const chain of CHAINS) {
   const { code, result } = runClaimJs(['withdraw', `--chain=${chain}`]);

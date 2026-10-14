@@ -60,13 +60,13 @@ function describe(status, json) {
   return `HTTP ${status}${msg ? `, ${msg.replace(/\s+/g, ' ').slice(0, 160)}` : ''}`;
 }
 
-async function call(keys, path, body, headers = {}) {
+async function call(keys, path, { method = 'POST', body, headers = {} } = {}) {
   const url = `${API}${path}`;
   let res;
   try {
     res = await fetch(url, {
-      method: 'POST', body, redirect: 'error', signal: AbortSignal.timeout(60_000),
-      headers: { Authorization: oauthHeader('POST', url, keys), ...headers },
+      method, body, redirect: 'error', signal: AbortSignal.timeout(60_000),
+      headers: { Authorization: oauthHeader(method, url, keys), ...headers },
     });
   } catch (e) { throw new XError(`could not reach ${new URL(url).host} (${e.cause?.code || e.name})`); }
   let json = null;
@@ -74,12 +74,20 @@ async function call(keys, path, body, headers = {}) {
   return { status: res.status, json };
 }
 
+// The @handle the keys post as. Dry runs call this to prove the keys work without posting.
+export async function whoAmI(keys) {
+  const { status, json } = await call(keys, '/2/users/me', { method: 'GET' });
+  const handle = String(json?.data?.username ?? '');
+  if (status >= 300 || !/^\w{1,15}$/.test(handle)) throw new XError(`X did not accept the keys (${describe(status, json)})`);
+  return handle;
+}
+
 // Uploads one image and returns its media id.
 export async function uploadImage(keys, bytes, type) {
   const form = new FormData();
   form.append('media', new Blob([bytes], { type }), 'proof');
   form.append('media_category', 'tweet_image');
-  const { status, json } = await call(keys, '/2/media/upload', form);
+  const { status, json } = await call(keys, '/2/media/upload', { body: form });
   const id = String(json?.data?.id ?? json?.media_id_string ?? '');
   if (status >= 300 || !/^\d{1,30}$/.test(id)) throw new XError(`X refused the image upload (${describe(status, json)})`);
   return id;
@@ -88,7 +96,7 @@ export async function uploadImage(keys, bytes, type) {
 // Publishes one post and returns its id and link.
 export async function createPost(keys, text, mediaId) {
   const body = JSON.stringify(mediaId ? { text, media: { media_ids: [mediaId] } } : { text });
-  const { status, json } = await call(keys, '/2/tweets', body, { 'Content-Type': 'application/json' });
+  const { status, json } = await call(keys, '/2/tweets', { body, headers: { 'Content-Type': 'application/json' } });
   const id = String(json?.data?.id ?? '');
   if (status >= 300 || !/^\d{1,30}$/.test(id)) throw new XError(`X refused the post (${describe(status, json)})`);
   return { id, url: `https://x.com/i/status/${id}` };

@@ -1,4 +1,4 @@
-# Mock of the two X API calls the signer makes, for test-post.sh. It checks each request's
+# Mock of the three X API calls the signer makes, for test-post.sh. It checks each request's
 # OAuth 1.0a signature on its own (independently of x.mjs) and logs accepted posts to argv[2].
 import base64, hashlib, hmac, http.server, json, sys, urllib.parse as up
 KEYS = dict(ck='ck-test-1234', cs='cs-test-5678', at='at-test-9012', ats='ats-test-3456')
@@ -12,7 +12,7 @@ def signed_ok(handler):
     sig = p.pop('oauth_signature', '')
     if p.get('oauth_consumer_key') != KEYS['ck'] or p.get('oauth_token') != KEYS['at']: return False
     ps = '&'.join(f'{k}={v}' for k, v in sorted((q(k), q(v)) for k, v in p.items()))
-    base = '&'.join(['POST', q(f'http://127.0.0.1:{handler.server.server_port}{handler.path}'), q(ps)])
+    base = '&'.join([handler.command, q(f'http://127.0.0.1:{handler.server.server_port}{handler.path}'), q(ps)])
     want = base64.b64encode(hmac.new(f"{q(KEYS['cs'])}&{q(KEYS['ats'])}".encode(), base.encode(), hashlib.sha1).digest()).decode()
     return hmac.compare_digest(sig, want)
 
@@ -31,6 +31,10 @@ class H(http.server.BaseHTTPRequestHandler):
             state['next'] += 1
             with open(sys.argv[2], 'a') as f: f.write(json.dumps(req) + '\n')
             return self.reply(201, {'data': {'id': str(state['next']), 'text': req['text']}})
+        self.reply(404, {'title': 'Not Found'})
+    def do_GET(self):
+        if not signed_ok(self): return self.reply(401, {'title': 'Unauthorized', 'detail': 'Unauthorized', 'status': 401})
+        if self.path == '/2/users/me': return self.reply(200, {'data': {'id': '42', 'name': 'Test agent', 'username': 'test_agent'}})
         self.reply(404, {'title': 'Not Found'})
     def log_message(self, *a): pass
 
