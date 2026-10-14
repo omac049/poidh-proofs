@@ -25,7 +25,7 @@ if (!Number.isInteger(days) || days < 1 || days > 30) { console.error('--days mu
 
 // Public RPCs, tried in order for each block range. Some free endpoints refuse older ranges
 // ("archive" requests), so the next one gets a turn.
-const RPCS = [process.env.RPC_URL_MAINNET, 'https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org', 'https://1rpc.io/eth', 'https://eth.llamarpc.com']
+const RPCS = [process.env.RPC_URL_MAINNET, 'https://ethereum-rpc.publicnode.com', 'https://eth.drpc.org']
   .filter(Boolean)
   .map((url) => ({ url, pub: createPublicClient({ chain: mainnet, transport: http(url, { timeout: 30_000, retryCount: 1 }) }) }));
 
@@ -33,7 +33,7 @@ async function tryAll(what, fn) {
   const errors = [];
   for (const { url, pub } of RPCS) {
     try { return await fn(pub); }
-    catch (e) { errors.push(`${new URL(url).host}: ${String(e.shortMessage || e.message).split('\n')[0]}${e.details ? ` (${e.details})` : ''}`); }
+    catch (e) { errors.push(`${new URL(url).host}: ${`${String(e.shortMessage || e.message).split('\n')[0]} ${e.details || ''}`.slice(0, 200)}`); }
   }
   throw new Error(`${what} failed on every RPC: ${errors.join('; ')}`);
 }
@@ -45,8 +45,9 @@ const latest = await tryAll('reading the block number', async (pub) => {
   if ((await pub.getChainId()) !== 1) throw new Error('not Ethereum mainnet');
   return pub.getBlockNumber();
 });
-// Read only what the last run didn't (with a small overlap), or the whole window on the first run.
-const span = BigInt(days) * BLOCKS_PER_DAY;
+// Read only what the last run didn't (with a small overlap). Free RPCs refuse logs older than
+// about a day, so a first run starts one day back and the feed grows to its full window from there.
+const span = BLOCKS_PER_DAY;
 const windowStart = latest > span ? latest - span : 0n;
 const resume = Number.isInteger(old?.toBlock) ? BigInt(old.toBlock) - 64n : -1n;
 const first = resume > windowStart ? resume : windowStart;
