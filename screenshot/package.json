@@ -1,0 +1,9 @@
+{
+  "name": "poidh-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Takes proof screenshots of public pages on GitHub's machines. No keys, no wallet.",
+  "dependencies": {
+    "playwright": "1.49.1"
+  }
+}

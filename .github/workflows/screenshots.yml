@@ -1,0 +1,50 @@
+# Takes proof screenshots of public pages listed in shots/*.json and saves them under proofs/.
+# No secrets: it uses only this repository's own token, to save the pictures.
+# It opens https pages on a short list of hosts (see screenshot/shoot.mjs) and never connects a wallet.
+name: screenshots
+
+on:
+  push:
+    branches: [main]
+    paths: ['shots/*.json']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: false
+
+jobs:
+  shoot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Playwright's Chromium
+        working-directory: screenshot
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx --no-install playwright install --with-deps chromium
+
+      - name: Take screenshots
+        run: node screenshot/shoot.mjs .
+
+      - name: Save screenshots
+        if: always()
+        run: |
+          git config user.name "poidh-proofs screenshots"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A proofs shots
+          if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
+          # Only new pictures under proofs/ and moves inside shots/ may be saved.
+          bad=$(git diff --cached --name-status --no-renames | grep -Ev $'^A\tproofs/[a-z0-9-]+/[A-Za-z0-9._-]+\\.png$|^[AD]\tshots/' || true)
+          if [ -n "$bad" ]; then echo "refusing to save unexpected changes:"; echo "$bad"; exit 1; fi
+          git commit -q -m "Save screenshots"
+          for i in 1 2 3 4; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep $((i * 3))
+          done
+          exit 1
