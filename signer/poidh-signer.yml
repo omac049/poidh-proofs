@@ -1,11 +1,16 @@
 # poidh signer
 # Submits the claim requests agents file in omac049/poidh-proofs, signing with the agent
-# wallet key held in this repository's POIDH_AGENT_KEY secret.
+# wallet key held in this repository's POIDH_AGENT_KEY secret, and publishes the X posts they
+# draft, from the agent's X account whose keys are this repository's X_* secrets.
 # Keep this repository private, with no Claude access, so no agent can change this file.
 #
 # CODE_COMMIT pins the agent code this workflow runs. Agents can push to poidh-proofs,
 # but nothing they push runs here until this commit is changed. Change it only after
 # reading what changed in omac049/poidh-proofs since the commit set here.
+#
+# Posting needs all four X_* secrets; without them the workflow only claims. It keeps one
+# record per posted bounty on this repository's post-records branch, so nothing is posted
+# twice; that is the only thing it writes here.
 name: poidh signer
 
 on:
@@ -18,7 +23,8 @@ on:
         type: boolean
         default: false
 
-permissions: {}
+permissions:
+  contents: write   # only for the post-records branch, in the first and last steps
 
 concurrency:
   group: poidh-signer
@@ -38,12 +44,51 @@ jobs:
           git -C code fetch -q --depth 1 https://github.com/omac049/poidh-proofs "$CODE_COMMIT"
           git -C code checkout -q FETCH_HEAD
           git clone -q --depth 1 https://github.com/omac049/poidh-proofs data
+      - name: Load post records
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p post-records
+          git init -q "$RUNNER_TEMP/records"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          if git -C "$RUNNER_TEMP/records" -c http.extraheader="$auth" fetch -q --depth 1 "https://github.com/$GITHUB_REPOSITORY" post-records 2>/dev/null; then
+            git -C "$RUNNER_TEMP/records" checkout -q FETCH_HEAD
+            find "$RUNNER_TEMP/records" -maxdepth 1 -type f -name '*.json' -exec cp {} post-records/ \;
+          fi
+          rm -rf "$RUNNER_TEMP/records"
+          echo "$(ls post-records | wc -l) post records"
       - name: Install the pinned dependency
         working-directory: code/agent
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Withdraw winnings and submit claim requests
+      - name: Withdraw winnings, submit claim requests and publish posts
         working-directory: code/agent
         env:
           POIDH_AGENT_KEY: ${{ secrets.POIDH_AGENT_KEY }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          POST_RECORDS_DIR: ${{ github.workspace }}/post-records
           SIGNER_DRY_RUN: ${{ inputs.dry_run == true }}
-        run: node sign-requests.mjs ../../data/requests
+        run: node sign-requests.mjs ../../data/requests ../../data/posts
+      - name: Save post records
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A fresh clone, so nothing the signing step wrote can change how git runs here.
+          R="$RUNNER_TEMP/save"; rm -rf "$R"; git init -q "$R"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          if git -C "$R" -c http.extraheader="$auth" fetch -q --depth 1 "https://github.com/$GITHUB_REPOSITORY" post-records 2>/dev/null; then
+            git -C "$R" checkout -q FETCH_HEAD
+          fi
+          for f in post-records/*.json; do
+            n=$(basename "$f")
+            [[ "$n" =~ ^[a-z]+-[1-9][0-9]{0,8}\.json$ ]] && [ -f "$f" ] && [ ! -L "$f" ] || continue
+            cp "$f" "$R/$n"
+          done
+          cd "$R"
+          git add -A -- '*.json'
+          git diff --cached --quiet && { echo "no new post records"; exit 0; }
+          git -c user.name=poidh-signer -c user.email=poidh-signer@users.noreply.github.com commit -qm "Record X posts"
+          git -c http.extraheader="$auth" push -q "https://github.com/$GITHUB_REPOSITORY" HEAD:refs/heads/post-records
