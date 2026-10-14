@@ -1,15 +1,16 @@
 # poidh signer
 # Submits the claim requests agents file in omac049/poidh-proofs, signing with the agent
 # wallet key held in this repository's POIDH_AGENT_KEY secret.
-# Claude must have no access to this repository, or it could change this file.
+# Keep this repository private, with no Claude access, so no agent can change this file.
 #
-# CODE_COMMIT pins the agent code this workflow runs. Change it only after reading what
-# changed in omac049/poidh-proofs since the commit set here.
+# CODE_COMMIT pins the agent code this workflow runs. Agents can push to poidh-proofs,
+# but nothing they push runs here until this commit is changed. Change it only after
+# reading what changed in omac049/poidh-proofs since the commit set here.
 name: poidh signer
 
 on:
   schedule:
-    - cron: '11,41 * * * *'
+    - cron: '41 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -28,7 +29,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      CODE_COMMIT: REPLACE_WITH_REVIEWED_COMMIT
+      CODE_COMMIT: 201e4964ffa7f11454bddcc25df5b0985b99bdd8
     steps:
       - name: Fetch the pinned agent code and the latest requests
         run: |
