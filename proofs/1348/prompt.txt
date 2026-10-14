@@ -1,0 +1,67 @@
+Build the new homepage for tohseno.com as one self-contained HTML file.
+
+tohseno.com is now the home of Menlo. Today the page is mostly a feed of shipped apps. It never says, in the first screen, what Menlo does, who it is for, or why someone should trust a link to it. The new page fixes that: a visitor should understand Menlo within three seconds, then find the exact command or button they need.
+
+## What Menlo is (facts; use only these, invent nothing)
+
+- Menlo shares open-source iPhone apps without an app store. The page title on the live site is "Bypass the AppStore." The project's own one-liner is "Share your iPhone app. Let anyone try it."
+- A maker runs two commands in their app's public GitHub repository and gets a link to send:
+  npm i -g menloapp
+  menloapp deploy
+  The link looks like https://menloapp.lol/your-app. After the first deploy, pushing to the default branch is enough: the same link follows the latest commit.
+- `deploy` signs in to GitHub with a device code (a person approves it in a browser), finds the Xcode project and scheme, and prints the link.
+- Whoever opens the link on a Mac chooses Get app. Menlo for Mac downloads that commit from GitHub, builds it with Xcode, signs it with their own Apple ID, and installs it on their connected iPhone. Terminal alternative: npx menloapp try https://menloapp.lol/hello-menlo
+- Apple may ask the person to unlock the phone, tap Trust, turn on Developer Mode or sign in to Xcode. Those steps stay with the person.
+- The repository is the app. Menlo stores only a small public listing (slug, repository, Xcode project, scheme). It never hosts source code, binaries or anyone's tokens, and it never builds or signs for anyone.
+- A Menlo link says who published an app, which repository it comes from and which commit. It does not say the app is safe. That judgment belongs to the person who reads the source and chooses to build it.
+- Exact-version links pin one commit: https://menloapp.lol/<slug>?commit=<sha>&repository=<id>. Use them when recommending code you reviewed.
+- Reviews: anyone can publish, under their GitHub account, that they reviewed one exact version, and name what they examined: source, dependencies, entitlements, permissions, networking, privacy, payments, reproducibility. A review covers one commit and never carries over to a newer version. Reviews say what someone examined. They are not a safety guarantee. Command: npx menloapp review '<exact version link>'
+- Only public GitHub repositories with a committed Xcode project or workspace for an iOS app are supported.
+- Each app page shows the app's icon, name, subtitle, maker, up to three screenshots, a preview recording and a description, all from a `menloapp/app.json` file and media committed in the repository.
+- Requirements. To share an app: Node.js 20 or newer, git, and a GitHub account with push access to the public repository. To install an app: a Mac with macOS 14 or newer, Xcode, an Apple ID, and the iPhone the app is for. Menlo for Mac is a release candidate.
+- Other commands: menloapp init (create or edit the app page before deploying), menloapp open, menloapp doctor, menloapp --help.
+- For AI agents and coding assistants, the site publishes https://tohseno.com/llms.txt, which explains how to use Menlo on someone's behalf.
+- Menlo itself is open source: https://github.com/jpfraneto/menloapp
+- The footer line on the live site is "Software belongs to its builders."
+
+Apps shipped on Menlo so far (a snapshot from tohseno.com on 2026-10-14; show exactly these three, and say it is a snapshot):
+1. Anky, by @jpfraneto. "Anky, built from its public GitHub source for your iPhone." Page https://tohseno.com/anky. Source https://github.com/jpfraneto/anky-seed
+2. Logos, by @jpfraneto. "Practice difficult conversations with a voice-based iPhone app." Page https://tohseno.com/logos. Source https://github.com/jpfraneto/logos
+3. Hello MENLO, by @jpfraneto. "Open the app and tap Say hello. Your greeting count stays with you across launches." Page https://tohseno.com/hello-menlo. Source https://github.com/jpfraneto/menlo-hello-world
+
+Links to use (all absolute, all real): Download Menlo for Mac https://tohseno.com/download/macos · Docs https://docs.menloapp.lol · llms.txt https://tohseno.com/llms.txt · GitHub https://github.com/jpfraneto/menloapp · Privacy https://tohseno.com/privacy · Discover apps https://menloapp.lol
+
+## Page structure
+
+1. Header: the wordmark "Menlo" (set in the UI font, weight 700) and links to Docs, GitHub and llms.txt. A skip link comes first.
+2. Hero. Headline: "Share your iPhone app. Let anyone try it." Under it, one sentence: no App Store and no approval wait; you send a link, and their Mac builds your source with Xcode, signs it with their Apple ID and puts it on their iPhone. Beside it (below it on phones) draw the whole path as one inline-SVG diagram with four labeled stops: your public GitHub repo, the link (menloapp.lol/your-app), their Mac (Xcode build, their Apple ID), their iPhone. This diagram is the product explanation, so make it clear and calm, not decorative.
+3. Two doors, side by side on wide screens and stacked on phones, so each visitor picks their role:
+   - "I built an app": the two commands in a copyable code block, then one line on what happens next (a link to send; later pushes update the same link).
+   - "Someone sent me a link": the primary button "Download Menlo for Mac", then the Terminal alternative as a copyable command, then the line that Apple may ask you to tap Trust or turn on Developer Mode.
+4. "Shipped on Menlo": the three apps above as rows, each with a letter-initial icon tile (A, L, H in the accent color on its soft tint; no images), name, one-line description, "by @jpfraneto", a "Get app" link to its page and a "Source" link. A line under them: "That's everything shipped so far. Ship yours."
+5. "What a link promises, and what it doesn't": make the trust model the page's strongest section. Two columns: "A Menlo link tells you" (who published it, which repository, which exact commit) and "It does not tell you" (that the app is safe; you, or someone whose review you trust, read the source). Then exact-version links and reviews, with the scope words as small tags and the review command. Close with: Menlo never hosts your source, never holds your tokens, and never builds or signs for anyone.
+6. "What you need": two short lists, To share and To install, with the exact requirements. Mention that Menlo for Mac is a release candidate.
+7. "For agents": one paragraph saying that coding assistants can read https://tohseno.com/llms.txt to deploy, install or review on a person's behalf, and that a human still approves the GitHub sign-in and any review.
+8. FAQ using native <details> elements: Is this an app store? (No: there is no store, no approval wait and no hosting; the repository is the app.) Does Menlo build my app? (No: the person installing it builds it on their own Mac.) Which apps work? (Public GitHub repositories with a committed Xcode project or workspace for an iOS app.) How do I update my app? (Push to the default branch; the link follows the latest commit.) Is it safe? (A link names who, which repository and which commit; safety is judged by reading the source; reviews record what someone examined and are not a guarantee.)
+9. Footer: "Software belongs to its builders." in a larger bold statement, then links to Docs, GitHub, llms.txt, Download for Mac and Privacy.
+
+## Look and feel
+
+Use the live site's own design tokens exactly, so the page reads as the next tohseno.com and not a reskin:
+- Light: canvas #faf9f6, paper #f3eddd, surface #fffefa, ink #202720, muted #62695e, accent green #315f40, text on accent #ffffff, soft green #e8edde, lines #dcded3, control borders #858d7e.
+- Dark (prefers-color-scheme: dark): canvas #19211c, paper #252d24, surface #222b24, ink #f2f0e6, muted #b3bbaa, accent green #a6cba5, text on accent #19291d, soft green #303e2e, lines #455042, control borders #86947d.
+- Fonts: the system UI stack (-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) and ui-monospace, SFMono-Regular, Menlo, Consolas, monospace for code. No web fonts.
+- Spacing 4, 8, 12, 16, 24, 32, 48, 64 px. Radii: 8 px controls, 12 px cards, 16 px sheets. Every button and link target at least 44 px tall.
+- A large, tight hero headline (about clamp(40px, 6vw, 72px), weight 700, letter-spacing -0.045em, balanced wrapping). Hairline 1 px rules between sections. Generous whitespace. Native macOS calm: no gradients, glows, glassmorphism, emoji, stock illustrations, mock testimonials, user counts or invented statistics. The green accent is for actions and the diagram's path only.
+
+## Behaviour and quality bar
+
+- One index.html with inline CSS and at most a small inline script. Zero external requests: no fonts, CDNs, images, analytics or fetches. Icons and the favicon are inline SVG (the favicon as a data URI).
+- Everything readable and usable with JavaScript off. JavaScript only adds copy-to-clipboard buttons on code blocks, with a fallback when the Clipboard API is missing, and a polite live region that announces "Copied".
+- Responsive from 320 px to 1440 px wide with no horizontal scrolling; long commands wrap or scroll inside their own block.
+- Accessible: one <h1>; <header>, <main>, <section> with headings, <footer>; a visible focus ring in the accent color; SVG diagram with a <title> and text labels; WCAG AA contrast in both themes.
+- Respect prefers-reduced-motion; any motion is subtle and optional.
+- Include a meta description, Open Graph title and description, and theme-color for both schemes.
+- Keep it under 40 KB.
+
+Return only the complete HTML file.

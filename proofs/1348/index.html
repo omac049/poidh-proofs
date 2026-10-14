@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menlo · Bypass the AppStore</title>
+<meta name="description" content="Menlo shares open-source iPhone apps without an app store. Run two commands in your public GitHub repository and send the link: their Mac builds your source with Xcode, signs it with their Apple ID and installs it on their iPhone.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tohseno.com/">
+<meta property="og:site_name" content="Menlo">
+<meta property="og:title" content="Menlo · Share your iPhone app. Let anyone try it.">
+<meta property="og:description" content="No App Store and no approval wait. Send a link; their Mac builds your source with Xcode, signs it with their Apple ID and puts it on their iPhone.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#19211c" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23315f40'/%3E%3Cpath d='M9 22V10l7 8 7-8v12' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--canvas:#faf9f6;--paper:#f3eddd;--surface:#fffefa;--ink:#202720;--muted:#62695e;--accent:#315f40;--on-accent:#ffffff;--soft:#e8edde;--line:#dcded3;--control:#858d7e;--ui:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--canvas:#19211c;--paper:#252d24;--surface:#222b24;--ink:#f2f0e6;--muted:#b3bbaa;--accent:#a6cba5;--on-accent:#19291d;--soft:#303e2e;--line:#455042;--control:#86947d;color-scheme:dark}}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:17px/1.55 var(--ui);-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
+h1,h2,h3{margin:0;font-weight:700;color:var(--ink)}
+h2{font-size:clamp(28px,3.6vw,40px);line-height:1.1;letter-spacing:-.03em;text-wrap:balance}
+h3{font-size:20px;line-height:1.25;letter-spacing:-.015em}
+p{margin:0;text-wrap:pretty}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+main:focus{outline:none}
+[id]{scroll-margin-top:24px}
+code{font-family:var(--mono);font-size:.88em}
+:not(pre)>code{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+.vh{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.muted{color:var(--muted)}
+.small{font-size:15px;color:var(--muted)}
+.wrap{max-width:1152px;margin:0 auto;padding:0 16px}
+@media (min-width:600px){.wrap{padding:0 32px}}
+@media (min-width:1100px){.wrap{padding:0 48px}}
+.sec{border-top:1px solid var(--line);padding:48px 0}
+@media (min-width:760px){.sec{padding:64px 0}}
+.ic-s{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.skip{position:absolute;left:16px;top:-120px;z-index:10;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;background:var(--accent);color:var(--on-accent);font-weight:600;text-decoration:none}
+.skip:focus{top:8px}
+
+.top{border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:64px}
+.mark{display:inline-flex;align-items:center;min-height:44px;font-weight:700;font-size:21px;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+.nav{display:flex;margin-right:-10px}
+.nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 10px;border-radius:8px;color:var(--ink);font-size:15px;text-decoration:none}
+.nav a:hover{background:var(--soft)}
+
+.hero{padding:40px 0 48px}
+.hero .wrap{display:grid;gap:40px;align-items:center}
+@media (min-width:900px){.hero{padding:72px 0 80px}.hero .wrap{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:64px}}
+h1{font-size:clamp(40px,6vw,72px);line-height:1.02;letter-spacing:-.045em;text-wrap:balance;margin-bottom:24px}
+.lede{font-size:clamp(18px,1.9vw,21px);line-height:1.5;color:var(--muted);max-width:32em}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+
+.diagram{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 16px 16px}
+@media (min-width:600px){.diagram{padding:32px 32px 24px}}
+.diagram svg{display:block;width:100%;max-width:360px;height:auto;margin:0 auto}
+.diagram figcaption{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.dg-tile{fill:var(--paper);stroke:var(--line)}
+.dg-ic{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dg-path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dg-t{fill:var(--ink);font:600 17px var(--ui);letter-spacing:-.01em}
+.dg-s{fill:var(--muted);font:14.5px var(--ui)}
+.dg-step{fill:var(--muted);font:13.5px var(--ui)}
+.dg-m{font-family:var(--mono);fill:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:8px;border:1px solid transparent;font:600 16px/1.2 var(--ui);text-decoration:none;text-align:center}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:color-mix(in srgb,var(--accent) 86%,var(--ink))}
+.btn-lg{min-height:52px;padding:12px 24px;font-size:17px}
+.btn-quiet{background:var(--surface);color:var(--ink);border-color:var(--control)}
+.btn-quiet:hover{background:var(--soft)}
+.btn-soft{background:var(--soft);color:var(--accent)}
+.btn-soft:hover{border-color:var(--accent)}
+.tlink{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:600}
+
+.grid2{display:grid;gap:24px}
+@media (min-width:760px){.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 20px}
+@media (min-width:600px){.card{padding:32px}}
+.door{display:flex;flex-direction:column;gap:16px}
+.door h3{font-size:clamp(22px,2.4vw,28px);letter-spacing:-.03em}
+.door .more{display:grid;gap:8px;margin-top:4px;padding-top:16px;border-top:1px solid var(--line)}
+.dl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+
+.code{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.code-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:0 4px 0 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.code pre{margin:0;padding:14px 16px 16px;font:14.5px/1.65 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+.code code{font-size:inherit}
+.copy{-webkit-appearance:none;appearance:none;border:0;background:none;color:var(--accent);font:600 14px var(--ui);display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;padding:0 12px;border-radius:8px;cursor:pointer}
+.copy:hover{background:var(--soft)}
+.copy .ic-s{width:16px;height:16px}
+
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;margin-bottom:24px}
+.apps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.app{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px 16px;align-items:start;padding:20px 0;border-bottom:1px solid var(--line)}
+.tile{width:48px;height:48px;border-radius:12px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:22px;line-height:1}
+.app-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.app-head h3{font-size:19px}
+.by{font-size:15px;color:var(--muted)}
+.app-body p{margin-top:4px}
+.app-actions{grid-column:2;display:flex;flex-wrap:wrap;gap:8px}
+@media (min-width:720px){.app{grid-template-columns:56px minmax(0,1fr) auto;gap:24px;align-items:center}.tile{width:56px;height:56px;font-size:26px}.app-actions{grid-column:auto}}
+.after{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 24px;margin-top:16px}
+
+.band{background:var(--paper)}
+.band h2{font-size:clamp(32px,4.6vw,52px);line-height:1.05;letter-spacing:-.04em;max-width:14em}
+.band .sub{margin-top:16px;font-size:19px;color:var(--muted);max-width:34em}
+.promise{margin-top:40px}
+.promise h3{font-size:15px;font-weight:600;letter-spacing:0;color:var(--muted)}
+.says{list-style:none;margin:16px 0 0;padding:0}
+.says li{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);font-size:clamp(20px,2.2vw,24px);font-weight:600;line-height:1.3;letter-spacing:-.015em}
+.says .ic-s{width:22px;height:22px;margin-top:3px}
+.not p{margin-top:16px;color:var(--muted)}
+.how{margin-top:24px}
+.how .card{display:flex;flex-direction:column;gap:16px}
+.how .code{margin-top:auto}
+.tags{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.tags li{font-size:14px;line-height:1.2;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--canvas)}
+.never{display:grid;gap:12px;margin-top:48px;padding-top:32px;border-top:1px solid var(--line)}
+.never-lead{font-size:clamp(22px,2.8vw,32px);font-weight:700;line-height:1.2;letter-spacing:-.03em;max-width:24em;text-wrap:balance}
+
+.list{list-style:none;margin:16px 0 0;padding:0}
+.list li{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.list li::before{content:"";flex:none;width:6px;height:6px;border-radius:3px;background:var(--control);margin-top:.68em}
+.note{margin-top:16px}
+
+.split{display:grid;gap:16px 64px}
+@media (min-width:900px){.split{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}}
+.agents p{font-size:19px;max-width:36em}
+.agents .btn{margin-top:24px}
+
+.faq{border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;padding:12px 0;font-weight:600;font-size:18px;line-height:1.35}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";flex:none;width:9px;height:9px;margin-right:6px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-3px) rotate(45deg)}
+.faq details[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.faq details p{padding:0 0 20px;color:var(--muted);max-width:40em}
+
+.foot{border-top:1px solid var(--line);padding:64px 0 48px}
+.motto{font-size:clamp(30px,4.4vw,52px);font-weight:700;line-height:1.05;letter-spacing:-.04em;text-wrap:balance;margin-bottom:32px}
+.foot ul{list-style:none;margin:0 0 0 -12px;padding:0;display:flex;flex-wrap:wrap;gap:0 4px}
+.foot a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:8px;color:var(--ink);text-decoration:none}
+.foot a:hover{background:var(--soft)}
+.fine{margin-top:24px;font-size:14px;color:var(--muted)}
+
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}.btn,.copy,.nav a,.foot a{transition:background-color .15s ease,border-color .15s ease}.faq summary::after{transition:transform .2s ease}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="https://tohseno.com/">Menlo</a>
+    <nav class="nav" aria-label="Primary">
+      <a href="https://docs.menloapp.lol">Docs</a>
+      <a href="https://github.com/jpfraneto/menloapp">GitHub</a>
+      <a href="https://tohseno.com/llms.txt">llms.txt</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<section class="hero" aria-labelledby="hero-h">
+  <div class="wrap">
+    <div>
+      <h1 id="hero-h">Share your iPhone app. Let anyone try it.</h1>
+      <p class="lede">No App Store and no approval wait: you send a link, and their Mac builds your source with Xcode, signs it with their Apple ID and puts it on their iPhone.</p>
+      <div class="hero-actions">
+        <a class="btn btn-quiet" href="#share">I built an app <svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M5 11l5 5 5-5"/></svg></a>
+        <a class="btn btn-quiet" href="#install">Someone sent me a link <svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M5 11l5 5 5-5"/></svg></a>
+      </div>
+    </div>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 300 400" width="300" height="400" role="img" aria-labelledby="dg-title dg-desc">
+        <title id="dg-title">How a Menlo link gets your app from GitHub to their iPhone</title>
+        <desc id="dg-desc">Four stops in order. One: your public GitHub repo. You run menloapp deploy. Two: the link, menloapp.lol/your-app. They open it and choose Get app. Three: their Mac, which builds your source with Xcode and signs it with their Apple ID. It installs the app. Four: their iPhone.</desc>
+        <path class="dg-path" d="M26 58V110M21 105l5 5 5-5M26 174V226M21 221l5 5 5-5M26 290V342M21 337l5 5 5-5"/>
+        <text class="dg-step" x="66" y="88">you run <tspan class="dg-m">menloapp deploy</tspan></text>
+        <text class="dg-step" x="66" y="204">they open it and choose Get app</text>
+        <text class="dg-step" x="66" y="320">installs on their connected iPhone</text>
+
+        <g>
+          <rect class="dg-tile" x="2" y="2" width="48" height="48" rx="12"/>
+          <g class="dg-ic" transform="translate(2 2)"><circle cx="18" cy="14" r="3"/><circle cx="18" cy="34" r="3"/><circle cx="31" cy="18" r="3"/><path d="M18 17v14M31 21c0 6-13 5-13 10"/></g>
+          <text class="dg-t" x="66" y="21">Your public GitHub repo</text>
+          <text class="dg-s" x="66" y="42">The repository is the app</text>
+        </g>
+        <g transform="translate(0 116)">
+          <rect class="dg-tile" x="2" y="2" width="48" height="48" rx="12"/>
+          <g class="dg-ic" transform="translate(2 2)"><path d="M20 28l8-8M22.5 17.5l2.5-2.5a5 5 0 0 1 7 7l-2.5 2.5M25.5 30.5L23 33a5 5 0 0 1-7-7l2.5-2.5"/></g>
+          <text class="dg-t" x="66" y="21">The link</text>
+          <text class="dg-s dg-m" x="66" y="42">menloapp.lol/your-app</text>
+        </g>
+        <g transform="translate(0 232)">
+          <rect class="dg-tile" x="2" y="2" width="48" height="48" rx="12"/>
+          <g class="dg-ic" transform="translate(2 2)"><rect x="11" y="13" width="26" height="17" rx="2"/><path d="M7 35h34"/></g>
+          <text class="dg-t" x="66" y="21">Their Mac</text>
+          <text class="dg-s" x="66" y="42">Xcode build, their Apple ID</text>
+        </g>
+        <g transform="translate(0 348)">
+          <rect class="dg-tile" x="2" y="2" width="48" height="48" rx="12"/>
+          <g class="dg-ic" transform="translate(2 2)"><rect x="17" y="10" width="14" height="28" rx="3.5"/><path d="M22 34h4"/></g>
+          <text class="dg-t" x="66" y="21">Their iPhone</text>
+          <text class="dg-s" x="66" y="42">Your app, installed</text>
+        </g>
+      </svg>
+      <figcaption>The source stays on GitHub. The build happens on their Mac. Menlo keeps only a small public listing.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="start-h">
+  <div class="wrap">
+    <h2 id="start-h" class="vh">Start here</h2>
+    <div class="grid2">
+      <article class="card door" id="share" aria-labelledby="share-h">
+        <h3 id="share-h">I built an app</h3>
+        <p class="muted">In your app’s public GitHub repository, run:</p>
+        <div class="code" data-copy="the two deploy commands">
+          <div class="code-bar"><span>In your repository</span></div>
+<pre><code>npm i -g menloapp
+menloapp deploy</code></pre>
+        </div>
+        <p>You get a link to send, like <code>https://menloapp.lol/your-app</code>. After that, pushing to the default branch is enough: the same link follows the latest commit.</p>
+        <div class="more">
+          <p class="small"><code>deploy</code> signs in to GitHub with a device code you approve in a browser, finds your Xcode project and scheme, and prints the link.</p>
+          <p class="small"><code>menloapp init</code> creates or edits your app page before you deploy: icon, name, subtitle, up to three screenshots, a preview recording and a description, from <code>menloapp/app.json</code> and media committed in the repository. Also: <code>menloapp open</code>, <code>menloapp doctor</code>, <code>menloapp --help</code>.</p>
+        </div>
+      </article>
+
+      <article class="card door" id="install" aria-labelledby="install-h">
+        <h3 id="install-h">Someone sent me a link</h3>
+        <p class="muted">Open it on your Mac and choose Get app. Menlo for Mac downloads that commit from GitHub, builds it with Xcode, signs it with your Apple ID and installs it on your connected iPhone.</p>
+        <div class="dl">
+          <a class="btn btn-primary btn-lg" href="https://tohseno.com/download/macos"><svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M6 9l4 4 4-4M4 16.5h12"/></svg>Download Menlo for Mac</a>
+          <p class="small">Release candidate · macOS 14 or newer</p>
+        </div>
+        <div class="code" data-copy="the Terminal command">
+          <div class="code-bar"><span>Or in Terminal</span></div>
+<pre><code>npx menloapp try https://menloapp.lol/hello-menlo</code></pre>
+        </div>
+        <p class="small">Apple may ask you to unlock your phone, tap Trust, turn on Developer Mode or sign in to Xcode. Those steps stay with you.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="apps" aria-labelledby="apps-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="apps-h">Shipped on Menlo</h2>
+      <p class="small">A snapshot from tohseno.com on October 14, 2026.</p>
+    </div>
+    <ul class="apps">
+      <li class="app">
+        <span class="tile" aria-hidden="true">A</span>
+        <div class="app-body">
+          <div class="app-head"><h3>Anky</h3><span class="by">by @jpfraneto</span></div>
+          <p>Anky, built from its public GitHub source for your iPhone.</p>
+        </div>
+        <div class="app-actions">
+          <a class="btn btn-soft" href="https://tohseno.com/anky">Get app<span class="vh">: Anky</span></a>
+          <a class="btn btn-quiet" href="https://github.com/jpfraneto/anky-seed">Source<span class="vh"> of Anky</span></a>
+        </div>
+      </li>
+      <li class="app">
+        <span class="tile" aria-hidden="true">L</span>
+        <div class="app-body">
+          <div class="app-head"><h3>Logos</h3><span class="by">by @jpfraneto</span></div>
+          <p>Practice difficult conversations with a voice-based iPhone app.</p>
+        </div>
+        <div class="app-actions">
+          <a class="btn btn-soft" href="https://tohseno.com/logos">Get app<span class="vh">: Logos</span></a>
+          <a class="btn btn-quiet" href="https://github.com/jpfraneto/logos">Source<span class="vh"> of Logos</span></a>
+        </div>
+      </li>
+      <li class="app">
+        <span class="tile" aria-hidden="true">H</span>
+        <div class="app-body">
+          <div class="app-head"><h3>Hello MENLO</h3><span class="by">by @jpfraneto</span></div>
+          <p>Open the app and tap Say hello. Your greeting count stays with you across launches.</p>
+        </div>
+        <div class="app-actions">
+          <a class="btn btn-soft" href="https://tohseno.com/hello-menlo">Get app<span class="vh">: Hello MENLO</span></a>
+          <a class="btn btn-quiet" href="https://github.com/jpfraneto/menlo-hello-world">Source<span class="vh"> of Hello MENLO</span></a>
+        </div>
+      </li>
+    </ul>
+    <div class="after">
+      <p>That’s everything shipped so far. <a class="tlink" href="#share">Ship yours.</a></p>
+      <a class="tlink" href="https://menloapp.lol">Discover apps on menloapp.lol <svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 13l6-6M8 7h5v5"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec band" id="trust" aria-labelledby="trust-h">
+  <div class="wrap">
+    <h2 id="trust-h">What a link promises, and what it doesn’t</h2>
+    <p class="sub">A Menlo link points at public source. It is not a verdict on it.</p>
+
+    <div class="grid2 promise">
+      <div class="card">
+        <h3>A Menlo link tells you</h3>
+        <ul class="says">
+          <li><svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>Who published it</li>
+          <li><svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>Which repository it comes from</li>
+          <li><svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>Which exact commit</li>
+        </ul>
+      </div>
+      <div class="card not">
+        <h3>It does not tell you</h3>
+        <ul class="says">
+          <li><svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9l-9 9"/></svg>That the app is safe</li>
+        </ul>
+        <p>That judgment belongs to whoever reads the source and chooses to build it: you, or someone whose review you trust.</p>
+      </div>
+    </div>
+
+    <div class="grid2 how">
+      <div class="card">
+        <h3>Exact-version links</h3>
+        <p>A plain link follows the latest commit, so what it opens can change. An exact-version link pins one commit. Use one when you recommend code you reviewed.</p>
+        <div class="code">
+          <div class="code-bar"><span>Exact-version link</span></div>
+<pre><code>https://menloapp.lol/&lt;slug&gt;?commit=&lt;sha&gt;&amp;repository=&lt;id&gt;</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Reviews</h3>
+        <p>Anyone can publish, under their GitHub account, that they reviewed one exact version, and name what they examined:</p>
+        <ul class="tags" aria-label="What a review can name">
+          <li>source</li><li>dependencies</li><li>entitlements</li><li>permissions</li><li>networking</li><li>privacy</li><li>payments</li><li>reproducibility</li>
+        </ul>
+        <p class="small">A review covers one commit and never carries over to a newer version. Reviews say what someone examined. They are not a safety guarantee.</p>
+        <div class="code" data-copy="the review command">
+          <div class="code-bar"><span>Terminal</span></div>
+<pre><code>npx menloapp review '&lt;exact version link&gt;'</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="never">
+      <p class="never-lead">Menlo never hosts your source, never holds your tokens, and never builds or signs for anyone.</p>
+      <p class="muted">It stores only a small public listing: slug, repository, Xcode project and scheme. The repository is the app.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="need" aria-labelledby="need-h">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="need-h">What you need</h2></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>To share</h3>
+        <ul class="list">
+          <li>Node.js 20 or newer</li>
+          <li>git</li>
+          <li>A GitHub account with push access to the public repository</li>
+        </ul>
+        <p class="small note">The repository must be public on GitHub, with a committed Xcode project or workspace for an iOS app.</p>
+      </div>
+      <div class="card">
+        <h3>To install</h3>
+        <ul class="list">
+          <li>A Mac with macOS 14 or newer</li>
+          <li>Xcode</li>
+          <li>An Apple ID</li>
+          <li>The iPhone the app is for</li>
+        </ul>
+        <p class="small note">Menlo for Mac is a release candidate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="agents" aria-labelledby="agents-h">
+  <div class="wrap split">
+    <h2 id="agents-h">For agents</h2>
+    <div class="agents">
+      <p>Coding assistants and AI agents can read <code>https://tohseno.com/llms.txt</code> to deploy, install or review apps on a person’s behalf. A human still approves the GitHub sign-in and any review.</p>
+      <a class="btn btn-quiet" href="https://tohseno.com/llms.txt">Read llms.txt</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="faq" aria-labelledby="faq-h">
+  <div class="wrap split">
+    <h2 id="faq-h">Questions</h2>
+    <div class="faq">
+      <details>
+        <summary>Is this an app store?</summary>
+        <p>No. There is no store, no approval wait and no hosting. The repository is the app.</p>
+      </details>
+      <details>
+        <summary>Does Menlo build my app?</summary>
+        <p>No. The person installing it builds it on their own Mac, with Xcode, and signs it with their own Apple ID.</p>
+      </details>
+      <details>
+        <summary>Which apps work?</summary>
+        <p>Public GitHub repositories with a committed Xcode project or workspace for an iOS app.</p>
+      </details>
+      <details>
+        <summary>How do I update my app?</summary>
+        <p>Push to the default branch. The link follows the latest commit.</p>
+      </details>
+      <details>
+        <summary>Is it safe?</summary>
+        <p>A link names who published the app, which repository and which commit. Whether it is safe is judged by reading the source. Reviews record what someone examined; they are not a guarantee.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="motto">Software belongs to its builders.</p>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="https://docs.menloapp.lol">Docs</a></li>
+        <li><a href="https://github.com/jpfraneto/menloapp">GitHub</a></li>
+        <li><a href="https://tohseno.com/llms.txt">llms.txt</a></li>
+        <li><a href="https://tohseno.com/download/macos">Download for Mac</a></li>
+        <li><a href="https://tohseno.com/privacy">Privacy</a></li>
+      </ul>
+    </nav>
+    <p class="fine">Menlo is open source. tohseno.com is the home of Menlo.</p>
+  </div>
+</footer>
+
+<p id="live" class="vh" role="status" aria-live="polite"></p>
+
+<script>
+(function(){
+  var live=document.getElementById('live');
+  function say(m){live.textContent='';setTimeout(function(){live.textContent=m},60)}
+  function legacy(t){
+    var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');
+    a.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+    document.body.appendChild(a);a.select();var ok=false;
+    try{ok=document.execCommand('copy')}catch(e){}
+    document.body.removeChild(a);return ok}
+  function pick(n){try{var r=document.createRange();r.selectNodeContents(n);var s=window.getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}}
+  var icon='<svg class="ic-s" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="9" height="10" rx="2"/><path d="M13 4.5V4.4A1.4 1.4 0 0 0 11.6 3H5.4A1.4 1.4 0 0 0 4 4.4v7.2A1.4 1.4 0 0 0 5.4 13H6"/></svg>';
+  Array.prototype.forEach.call(document.querySelectorAll('.code[data-copy]'),function(b){
+    var code=b.querySelector('code'),bar=b.querySelector('.code-bar');if(!code||!bar)return;
+    var btn=document.createElement('button');btn.type='button';btn.className='copy';
+    btn.innerHTML=icon+'<span class="lbl">Copy</span>';
+    var extra=document.createElement('span');extra.className='vh';extra.textContent=' '+b.getAttribute('data-copy');btn.appendChild(extra);
+    var lbl=btn.querySelector('.lbl'),timer;
+    function done(){lbl.textContent='Copied';say('Copied');clearTimeout(timer);timer=setTimeout(function(){lbl.textContent='Copy'},2000)}
+    function fallback(){if(legacy(code.textContent))done();else{pick(code);say('Selected. Press Command-C or Ctrl+C to copy.')}}
+    btn.addEventListener('click',function(){
+      var t=code.textContent;
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fallback)}else{fallback()}
+    });
+    bar.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>
