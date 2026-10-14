@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 // poidh signer: run only by the GitHub workflow that holds the agent wallet key and the X keys.
-// Withdraws any winnings, submits each claim request agents filed in a folder, and publishes
-// the X posts agents drafted, at most once per bounty.
+// Withdraws any winnings, sends the New Eden posts agents filed, submits each claim request
+// agents filed in a folder, and publishes the X posts agents drafted, at most once per bounty.
 //
-//   node sign-requests.mjs <requests folder> [<posts folder>]
+//   node sign-requests.mjs <requests folder> [<posts folder>] [<neweden folder>]
 //
-// Agents can write to both folders, so their files are data and nothing more: each field is
-// checked here and handed to claim.mjs as a single argument (never through a shell), and
-// claim.mjs runs all of its own checks before it signs anything.
+// Agents can write to all three folders, so their files are data and nothing more: each field is
+// checked here and handed to claim.mjs or neweden.mjs as a single argument (never through a
+// shell), and each script runs all of its own checks before it signs anything.
 // SIGNER_CHAINS (default "base") lists the chains claims may use; POST_CHAINS (default
 // "base,mainnet") the chains a post-only draft may name. SIGNER_DRY_RUN=true runs everything
 // without sending. Posting needs the four X_* keys and POST_RECORDS_DIR, a folder the workflow
-// keeps between runs so a bounty is never posted about twice.
+// keeps between runs so a bounty is never posted about twice. New Eden requests are on only when
+// the third folder is given; NEWEDEN_CHAINS (default "mainnet") lists the chains they may use, and
+// each one is recorded in POST_RECORDS_DIR as neweden-<number>.json so it is never sent twice.
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync, lstatSync, appendFileSync } from 'node:fs';
@@ -22,6 +24,7 @@ import { xKeys, xSecretValues, postWeight, uploadImage, createPost, whoAmI, XErr
 
 const CHAINS = (process.env.SIGNER_CHAINS || 'base').split(',').map((c) => c.trim()).filter(Boolean);
 const POST_CHAINS = (process.env.POST_CHAINS || 'base,mainnet').split(',').map((c) => c.trim()).filter(Boolean);
+const NEWEDEN_CHAINS = (process.env.NEWEDEN_CHAINS || 'mainnet').split(',').map((c) => c.trim()).filter(Boolean);
 const DRY_RUN = process.env.SIGNER_DRY_RUN === 'true';
 const RECORDS = process.env.POST_RECORDS_DIR || '';
 const MAX_FILES = 10;          // per folder per run; claim.mjs also caps claims at 5 a day, counted onchain
@@ -30,6 +33,7 @@ const MAX_PROOF_URI = 1000;
 const MAX_POSTS_PER_DAY = 3;   // rolling 24 hours, counted from the post records
 const MAX_MENTIONS = 3;
 const MAX_MEDIA_BYTES = 5 * 1024 * 1024;
+const MAX_NEWEDEN_PER_DAY = 6; // rolling 24 hours, counted from the New Eden records; neweden.mjs also counts posts onchain
 // Post images must be pictures agents pushed to poidh-proofs, pinned to a commit.
 const MEDIA_ROOT = process.env.POST_MEDIA_ROOT || 'https://raw.githubusercontent.com/omac049/poidh-proofs/';
 const MEDIA_TYPES = { 'image/png': [0x89, 0x50, 0x4e, 0x47], 'image/jpeg': [0xff, 0xd8, 0xff], 'image/gif': [0x47, 0x49, 0x46, 0x38], 'image/webp': [0x52, 0x49, 0x46, 0x46] };
@@ -37,6 +41,8 @@ const FIELDS = ['chain', 'bounty', 'title', 'description', 'proof_uri'];
 const POST_LINK = (url) => `\n\nPost on X: ${url}`;
 const LONGEST_POST_URL = 'https://x.com/i/status/99999999999999999999';
 const CLAIM = join(dirname(fileURLToPath(import.meta.url)), 'claim.mjs');
+const NEWEDEN = join(dirname(fileURLToPath(import.meta.url)), 'neweden.mjs');
+const NEWEDEN_NAME = /^neweden-([1-9][0-9]{0,8})\.json$/;
 
 // Text from requests and bounties must not be read as GitHub workflow commands.
 if (process.env.GITHUB_ACTIONS === 'true') console.log(`::stop-commands::${randomBytes(16).toString('hex')}`);
@@ -46,18 +52,19 @@ const scrub = (s) => SECRETS.reduce((t, k) => t.split(k).join('[redacted]'), Str
 const summary = [];
 const note = (line) => { line = scrub(line); console.log(line); summary.push(line.replace(/[`\r\n]/g, ' ')); };
 
-// claim.mjs never needs the X keys, so they stay out of its environment.
+// claim.mjs and neweden.mjs never need the X keys, so they stay out of their environment.
 const CLAIM_ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('X_')));
 
-function runClaimJs(args, { dryRun = DRY_RUN } = {}) {
-  const r = spawnSync(process.execPath, [CLAIM, ...args, ...(dryRun ? ['--dry-run'] : [])],
+function runClaimJs(args, { dryRun = DRY_RUN, script = CLAIM } = {}) {
+  const r = spawnSync(process.execPath, [script, ...args, ...(dryRun ? ['--dry-run'] : [])],
     { encoding: 'utf8', timeout: 300_000, maxBuffer: 1 << 20, env: CLAIM_ENV });
   const out = (r.stdout || '').split('\n').filter(Boolean);
   for (const line of out.slice(0, -1)) console.log(scrub(`    ${line}`));
   const last = out.at(-1) || '';
   let result = null;
   if (last.startsWith('RESULT ')) { try { result = JSON.parse(last.slice(7)); } catch { /* reported below */ } }
-  if (!result) result = { ok: false, error: r.error?.code === 'ETIMEDOUT' ? 'claim.mjs timed out' : `claim.mjs exited ${r.status} without a result` };
+  const name = script === CLAIM ? 'claim.mjs' : 'neweden.mjs';
+  if (!result) result = { ok: false, error: r.error?.code === 'ETIMEDOUT' ? `${name} timed out` : `${name} exited ${r.status} without a result` };
   return { code: r.status, result };
 }
 
@@ -128,6 +135,29 @@ function readPostDraft(dir, name) {
   return { ...readBounty(req, POST_CHAINS), post: readPost(req.post) };
 }
 
+// Returns the neweden.mjs arguments for one New Eden request: a post in a room, or the wallet's profile.
+function readNewEden(dir, name) {
+  if (!NEWEDEN_NAME.test(name)) throw new Error('file name must be neweden-<number>.json');
+  const req = readJsonFile(dir, name, ['chain', 'action', 'room', 'text', 'name', 'description'], ['chain', 'action']);
+  if (!NEWEDEN_CHAINS.includes(req.chain)) throw new Error(`chain must be one of ${NEWEDEN_CHAINS.join(', ')}`);
+  const fields = { post: ['room', 'text'], register: ['name', 'description'] }[req.action];
+  if (!fields) throw new Error('"action" must be "post" or "register"');
+  const extra = Object.keys(req).filter((k) => !['chain', 'action', ...fields].includes(k));
+  if (extra.length) throw new Error(`a ${req.action} request does not take ${extra.map((k) => `"${k}"`).join(', ')}`);
+  for (const k of fields) {
+    if (k === 'room') {
+      if (!Number.isInteger(req.room) || req.room < 0 || req.room > 999_999_999) throw new Error('"room" must be a room number, such as 6');
+    } else {
+      if (typeof req[k] !== 'string' || !req[k].trim()) throw new Error(`"${k}" must be a non-empty string`);
+      if (/[\u0000-\u0009\u000b-\u001f\u007f\u202a-\u202e\u2066-\u2069]/.test(req[k])) throw new Error(`"${k}" contains control characters`);
+    }
+  }
+  const args = req.action === 'post'
+    ? ['post', `--chain=${req.chain}`, `--room=${req.room}`, `--text=${req.text.trim()}`]
+    : ['register', `--chain=${req.chain}`, `--name=${req.name.trim()}`, `--description=${req.description.trim()}`];
+  return { key: name.slice(0, -5), action: req.action, chain: req.chain, args };
+}
+
 // ---- Post records: one per bounty, so nothing is ever posted twice ----
 const records = new Map();
 function loadRecords() {
@@ -139,6 +169,21 @@ function loadRecords() {
     try {
       const r = JSON.parse(readFileSync(join(RECORDS, n), 'utf8'));
       if (typeof r.url === 'string' && /^https:\/\/x\.com\/i\/status\/\d{1,30}$/.test(r.url) && Number.isFinite(r.postedAt)) records.set(n.slice(0, -5), r);
+    } catch { /* ignore unreadable records */ }
+  }
+}
+
+// New Eden records are their own shape, so they never count toward the X post cap.
+const edenRecords = new Map();
+function loadNewEdenRecords() {
+  if (!RECORDS) return;
+  let names = [];
+  try { names = readdirSync(RECORDS); } catch { return; }
+  for (const n of names) {
+    if (!NEWEDEN_NAME.test(n)) continue;
+    try {
+      const r = JSON.parse(readFileSync(join(RECORDS, n), 'utf8'));
+      if (typeof r.tx === 'string' && /^0x[0-9a-f]{64}$/.test(r.tx) && Number.isFinite(r.sentAt)) edenRecords.set(n.slice(0, -5), r);
     } catch { /* ignore unreadable records */ }
   }
 }
@@ -188,10 +233,10 @@ async function publish(label, key, post) {
   }
 }
 
-function listFiles(dir) {
+function listFiles(dir, order) {
   if (!dir) return [];
   let names;
-  try { names = readdirSync(dir, { withFileTypes: true }).filter((d) => !d.isDirectory()).map((d) => d.name).sort(); }
+  try { names = readdirSync(dir, { withFileTypes: true }).filter((d) => !d.isDirectory()).map((d) => d.name).sort(order); }
   catch { note(`no folder ${dir.split('/').at(-1)}`); return []; }
   if (names.length > MAX_FILES) note(`${names.length} files in ${dir.split('/').at(-1)}; handling the first ${MAX_FILES} this run`);
   return names.slice(0, MAX_FILES);
@@ -202,6 +247,7 @@ const safeLabel = (name) => (/^[\w.-]{1,80}$/.test(name) ? name : '(file with an
 let failed = false;
 note(`poidh signer${DRY_RUN ? ' (dry run)' : ''}`);
 loadRecords();
+loadNewEdenRecords();
 
 // Say whether posting is on. A dry run also asks X which account the keys post as.
 const X_KEYS = xKeys();
@@ -220,7 +266,35 @@ for (const chain of CHAINS) {
   else { note(`withdraw on ${chain}: ${result.error}`); if (code !== 2) failed = true; }
 }
 
-const [requestsDir, postsDir] = process.argv.slice(2);
+const [requestsDir, postsDir, edenDir] = process.argv.slice(2);
+
+// New Eden requests, sent before claims so a claim filed in the same run can point at them.
+// Numbered files run in number order, so a register request can come before the posts that need it.
+if (!edenDir) note('New Eden: off, no neweden folder given');
+else if (!RECORDS) note('New Eden: off, no POST_RECORDS_DIR to record what was sent');
+else {
+  note(`New Eden: on (${NEWEDEN_CHAINS.join(', ')})`);
+  const num = (n) => Number(NEWEDEN_NAME.exec(n)?.[1] ?? Infinity);
+  for (const name of listFiles(edenDir, (a, b) => num(a) - num(b) || (a < b ? -1 : 1))) {
+    const label = `neweden/${safeLabel(name)}`;
+    let act;
+    try { act = readNewEden(edenDir, name); }
+    catch (e) { note(`${label}: skipped, ${e.message}`); continue; }
+    if (edenRecords.has(act.key)) { note(`${label}: already done, ${edenRecords.get(act.key).link}`); continue; }
+    const now = Math.floor(Date.now() / 1000);
+    const recent = [...edenRecords.values()].filter((r) => now - r.sentAt < 86_400).length;
+    if (recent >= MAX_NEWEDEN_PER_DAY) { note(`${label}: waiting, the daily New Eden cap is reached (${recent} of ${MAX_NEWEDEN_PER_DAY} in 24 hours)`); continue; }
+    const { code, result } = runClaimJs(act.args, { script: NEWEDEN });
+    if (result.ok && result.dryRun) { note(`${label}: dry run passed`); continue; }
+    if (!result.ok) { note(`${label}: ${code === 2 ? 'refused' : 'error'}, ${result.error}`); if (code !== 2) failed = true; continue; }
+    // A post found already onchain is recorded too, but does not count toward today's cap.
+    const rec = { action: act.action, chain: act.chain, tx: result.tx, link: result.link, sentAt: result.already ? 0 : now };
+    edenRecords.set(act.key, rec);
+    try { writeFileSync(join(RECORDS, `${act.key}.json`), `${JSON.stringify(rec)}\n`); }
+    catch (e) { note(`${label}: sent ${result.link} but could not record it (${e.code || e.message})`); failed = true; }
+    note(`${label}: ${result.already ? 'already posted' : act.action === 'post' ? 'posted' : 'registered'}, ${result.link}`);
+  }
+}
 
 for (const name of listFiles(requestsDir)) {
   const label = safeLabel(name);

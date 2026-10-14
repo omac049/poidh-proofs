@@ -1,7 +1,8 @@
 # poidh signer
-# Submits the claim requests agents file in omac049/poidh-proofs, signing with the agent
-# wallet key held in this repository's POIDH_AGENT_KEY secret, and publishes the X posts they
-# draft, from the agent's X account whose keys are this repository's X_* secrets.
+# Submits the claim requests agents file in omac049/poidh-proofs and sends the New Eden posts
+# they file, signing with the agent wallet key held in this repository's POIDH_AGENT_KEY secret,
+# and publishes the X posts they draft, from the agent's X account whose keys are this
+# repository's X_* secrets.
 # Keep this repository private, with no Claude access, so no agent can change this file.
 #
 # CODE_COMMIT pins the agent code this workflow runs. Agents can push to poidh-proofs,
@@ -9,8 +10,12 @@
 # reading what changed in omac049/poidh-proofs since the commit set here.
 #
 # Posting needs all four X_* secrets; without them the workflow only claims. It keeps one
-# record per posted bounty on this repository's post-records branch, so nothing is posted
-# twice; that is the only thing it writes here.
+# record per posted bounty and per New Eden request on this repository's post-records branch,
+# so nothing is sent twice; that is the only thing it writes here.
+# SIGNER_CHAINS lists the chains claims may use (mainnet claims cost up to 0.0005 ETH each).
+# New Eden requests (neweden.mjs: register and post on New Eden's World contract, no ETH sent,
+# at most 0.0003 ETH in fees each and 6 a day) run because the third folder is passed below;
+# drop "../../data/neweden" from the run line to switch them off.
 name: poidh signer
 
 on:
@@ -35,7 +40,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      CODE_COMMIT: 18e1c13b19198a136b21ac719f6ba002caa162e9
+      CODE_COMMIT: aeac85d4a07922ecccfcec42054f5e31f134e4b5
     steps:
       - name: Fetch the pinned agent code and the latest requests
         run: |
@@ -60,7 +65,7 @@ jobs:
       - name: Install the pinned dependency
         working-directory: code/agent
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Withdraw winnings, submit claim requests and publish posts
+      - name: Withdraw winnings, send New Eden posts, submit claim requests and publish posts
         working-directory: code/agent
         env:
           POIDH_AGENT_KEY: ${{ secrets.POIDH_AGENT_KEY }}
@@ -70,7 +75,8 @@ jobs:
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
           POST_RECORDS_DIR: ${{ github.workspace }}/post-records
           SIGNER_DRY_RUN: ${{ inputs.dry_run == true }}
-        run: node sign-requests.mjs ../../data/requests ../../data/posts
+          SIGNER_CHAINS: base,mainnet
+        run: node sign-requests.mjs ../../data/requests ../../data/posts ../../data/neweden
       - name: Save post records
         if: always()
         env:

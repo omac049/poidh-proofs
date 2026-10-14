@@ -84,7 +84,7 @@ ln -s /proc/self/environ $Q/g-link.json
 req 'Bad Name.json' '{}'
 head -c 9000 /dev/zero | tr '\0' ' ' > $Q/h-big.json
 req done/x.json '{}'
-cp $A/sign-requests.mjs $POIDH_AGENT_WORKDIR/
+cp $A/sign-requests.mjs $A/x.mjs $POIDH_AGENT_WORKDIR/
 s(){ # s "name" expected_exit env text...
   local name="$1" want="$2" envs="$3"; shift 3
   out=$(env $envs SIGNER_CHAINS=local node $POIDH_AGENT_WORKDIR/sign-requests.mjs $Q 2>&1); code=$?; echo "$out" >> $LOG
