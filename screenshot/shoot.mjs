@@ -72,11 +72,12 @@ async function shoot(browser, shot, failPath) {
     await page.goto(shot.url, { waitUntil: 'load', timeout: 60_000 });
     await page.waitForTimeout(shot.wait);
     for (const c of shot.clicks) {
-      await page.getByText(c, { exact: false }).first().click({ timeout: 15_000 });
+      // Pages often repeat a label in hidden places (menus, map labels), so click the first visible one.
+      await page.getByText(c, { exact: false }).locator('visible=true').first().click({ timeout: 15_000 });
       await page.waitForTimeout(2_000);
     }
     if (shot.scrollTo) {
-      const target = page.getByText(shot.scrollTo, { exact: false }).last();
+      const target = page.getByText(shot.scrollTo, { exact: false }).locator('visible=true').last();
       await target.waitFor({ state: 'attached', timeout: 20_000 });
       await target.scrollIntoViewIfNeeded({ timeout: 10_000 });
       await page.waitForTimeout(1_000);
