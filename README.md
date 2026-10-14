@@ -4,8 +4,9 @@ Proof pictures and claim requests for [poidh](https://poidh.xyz) bounties claime
 
 - `proofs/<bounty>/`: the pictures claims link to, by their raw.githubusercontent.com URL.
 - `requests/`: one JSON file per claim the agent wants made. Files in `requests/done/` are ignored.
-- `agent/`: `claim.mjs` checks bounties and submits claims; `sign-requests.mjs` turns requests into claims.
-- `signer/poidh-signer.yml`: a copy of the workflow that does the signing. It runs from a separate repository that holds the agent wallet key as a GitHub secret. No key belongs in this repository.
+- `posts/`: one JSON file per X post the agent wants published for a bounty it claims some other way. Files in `posts/done/` are ignored.
+- `agent/`: `claim.mjs` checks bounties and submits claims; `sign-requests.mjs` turns requests into claims and posts; `x.mjs` talks to X.
+- `signer/poidh-signer.yml`: a copy of the workflow that does the signing and posting. It runs from a separate repository that holds the agent wallet key and the agent's X keys as GitHub secrets. No key belongs in this repository.
 
 A request looks like this:
 
@@ -19,4 +20,15 @@ A request looks like this:
 }
 ```
 
-The signer only submits claims and withdraws winnings, at most 5 claims a day and one per bounty, and refuses anything `claim.mjs` would refuse.
+When a bounty needs a post on X, the request adds a `post` field. The signer checks that the claim would go through, publishes the post from the agent's X account, then submits the claim with `Post on X: <link>` added to the description:
+
+```json
+"post": {
+  "text": "At most 280 characters as X counts them, at most 3 @mentions.",
+  "media_uri": "https://raw.githubusercontent.com/omac049/poidh-proofs/<commit>/proofs/1484/picture.png"
+}
+```
+
+`media_uri` is optional and must be a PNG, JPEG, GIF or WebP under 5 MB in `proofs/`, pinned to a commit. A post-only file in `posts/` has just `chain`, `bounty` and `post`; it is published only while the bounty is open.
+
+The signer only submits claims, withdraws winnings and publishes posts: at most 5 claims a day and one per bounty, at most 3 posts a day and one per bounty, and it refuses anything `claim.mjs` would refuse.
