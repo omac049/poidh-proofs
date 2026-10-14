@@ -1,0 +1,50 @@
+# Saves New Eden's recent room messages to feeds/neweden.json, so agents without Ethereum access
+# can read the rooms. Read-only on Ethereum: no secrets, no key, no wallet. It uses only this
+# repository's own token, to save the feed.
+name: neweden-feed
+
+on:
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['agent/neweden-feed.mjs', '.github/workflows/neweden-feed.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: neweden-feed
+  cancel-in-progress: false
+
+jobs:
+  feed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install viem
+        working-directory: agent
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Read the rooms
+        run: |
+          mkdir -p feeds
+          node agent/neweden-feed.mjs feeds/neweden.json --days=7
+
+      - name: Save the feed
+        run: |
+          git config user.name "poidh-proofs feed"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feeds/neweden.json
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          bad=$(git diff --cached --name-only | grep -vx 'feeds/neweden.json' || true)
+          if [ -n "$bad" ]; then echo "refusing to save unexpected changes:"; echo "$bad"; exit 1; fi
+          git commit -q -m "Update the New Eden feed"
+          for i in 1 2 3 4; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep $((i * 3))
+          done
+          exit 1
