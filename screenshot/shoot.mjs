@@ -62,28 +62,36 @@ function readShot(name) {
   return { url: url.href, out, wait, clicks, scrollTo, fullPage };
 }
 
-// Clicks the first visible tab, button, link or text with this label. Pages often repeat a label in
-// hidden places, and some draw an overlay over their controls, so this tries a normal click first
-// and then sends the click event to the element directly.
+// Clicks the on-screen element with this label that is really on top at its centre, the way a
+// finger would. Pages often repeat a label in hidden or covered places (menus, map labels behind a
+// panel), and a click sent to one of those does nothing.
 async function clickText(page, label) {
-  const candidates = [
-    page.getByRole('tab', { name: label }),
-    page.getByRole('button', { name: label }),
-    page.getByRole('link', { name: label }),
-    page.getByText(label, { exact: true }),
-    page.getByText(label, { exact: false }),
-  ];
-  let last = 'nothing visible has that text';
-  for (const loc of candidates) {
-    const el = loc.locator('visible=true').first();
-    if (!(await el.count())) continue;
-    try { await el.click({ timeout: 5_000 }); return; }
-    catch (e) { last = String(e.message || e).split('\n')[0]; }
-    // Something covers it: send the click to the element itself.
-    try { await el.dispatchEvent('click'); return; }
-    catch (e) { last = String(e.message || e).split('\n')[0]; }
+  const found = await page.evaluate((label) => {
+    const want = label.trim().toLowerCase();
+    const text = (el) => (el.innerText || '').trim().toLowerCase();
+    const all = [...document.querySelectorAll('body *')].filter((el) => text(el).includes(want));
+    // Exact labels first, smallest first so a button wins over the bar around it; then the
+    // shortest texts that contain the label.
+    const area = (el) => { const r = el.getBoundingClientRect(); return r.width * r.height; };
+    const ranked = [...all.filter((el) => text(el) === want).sort((x, y) => area(x) - area(y)),
+      ...all.filter((el) => text(el) !== want).sort((x, y) => text(x).length - text(y).length)];
+    const seen = [];
+    for (const el of ranked) {
+      el.scrollIntoView({ block: 'center', inline: 'center' });
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height / 2;
+      const top = document.elementFromPoint(x, y);
+      if (top && (top === el || el.contains(top) || top.contains(el))) return { x, y };
+      if (seen.length < 3) seen.push(`<${el.tagName.toLowerCase()}> under <${top ? top.tagName.toLowerCase() : 'nothing'}>`);
+    }
+    return { matches: all.length, seen };
+  }, label);
+  if (found.x === undefined) {
+    throw new Error(`could not click "${label}": ${found.matches} element(s) contain it, none on top${found.seen.length ? ` (${found.seen.join(', ')})` : ''}`);
   }
-  throw new Error(`could not click "${label}": ${last}`);
+  await page.mouse.click(found.x, found.y);
 }
 
 async function shoot(browser, shot, failPath) {
