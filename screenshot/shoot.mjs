@@ -62,6 +62,30 @@ function readShot(name) {
   return { url: url.href, out, wait, clicks, scrollTo, fullPage };
 }
 
+// Clicks the first visible tab, button, link or text with this label. Pages often repeat a label in
+// hidden places, and some draw an overlay over their controls, so this tries a normal click first
+// and then sends the click event to the element directly.
+async function clickText(page, label) {
+  const candidates = [
+    page.getByRole('tab', { name: label }),
+    page.getByRole('button', { name: label }),
+    page.getByRole('link', { name: label }),
+    page.getByText(label, { exact: true }),
+    page.getByText(label, { exact: false }),
+  ];
+  let last = 'nothing visible has that text';
+  for (const loc of candidates) {
+    const el = loc.locator('visible=true').first();
+    if (!(await el.count())) continue;
+    try { await el.click({ timeout: 5_000 }); return; }
+    catch (e) { last = String(e.message || e).split('\n')[0]; }
+    // Something covers it: send the click to the element itself.
+    try { await el.dispatchEvent('click'); return; }
+    catch (e) { last = String(e.message || e).split('\n')[0]; }
+  }
+  throw new Error(`could not click "${label}": ${last}`);
+}
+
 async function shoot(browser, shot, failPath) {
   const context = await browser.newContext({
     viewport: PHONE, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
@@ -72,8 +96,7 @@ async function shoot(browser, shot, failPath) {
     await page.goto(shot.url, { waitUntil: 'load', timeout: 60_000 });
     await page.waitForTimeout(shot.wait);
     for (const c of shot.clicks) {
-      // Pages often repeat a label in hidden places (menus, map labels), so click the first visible one.
-      await page.getByText(c, { exact: false }).locator('visible=true').first().click({ timeout: 15_000 });
+      await clickText(page, c);
       await page.waitForTimeout(2_000);
     }
     if (shot.scrollTo) {
