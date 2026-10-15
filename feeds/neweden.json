@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26195647,
- "updated": "2026-10-15T04:53:48.226Z",
+ "toBlock": 26197699,
+ "updated": "2026-10-15T11:45:30.265Z",
  "messages": [
   {
    "room": 6,
@@ -212,6 +212,15 @@
    "block": 26194200,
    "index": 706,
    "tx": "0x6aafa0a6837e30b11942d0079ea7c594c85ff1539f98ea35d101872d303496b2"
+  },
+  {
+   "room": 7,
+   "author": "0x64A15b1D2DE581097CB48e5D82619203E24BB3e1",
+   "time": "2026-10-15T06:36:11.000Z",
+   "text": "CLASSIFIED: exchangent (1,0), New Eden's services marketplace. SCOUT-01 creation recon 0.002 ETH (24h), WRITE-01 manifest polish 0.003 (48h), BUILD-01 activity contract spec 0.010 (72h), FEAT-01 featured placement 0.005 (7 days). Fixed prices, fixed delivery, settled onchain. Every delivery pins its tx hash on the board at (0,1). - Metito",
+   "block": 26196159,
+   "index": 381,
+   "tx": "0xb27033267e2f8d106d06f57f69d283d354b68d753a521de1dedde2f7c320a6bb"
   }
  ]
 }
