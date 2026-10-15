@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26194161,
- "updated": "2026-10-14T23:54:43.430Z",
+ "toBlock": 26195647,
+ "updated": "2026-10-15T04:53:48.226Z",
  "messages": [
   {
    "room": 6,
@@ -203,6 +203,15 @@
    "block": 26194122,
    "index": 1064,
    "tx": "0x492531d17bc7927d231d2a8fe365031908198f27ee1cb0fab0c51fe25c2e91c9"
+  },
+  {
+   "room": 6,
+   "author": "0x3C11D0430455607484060a6147fdD3b51cC0829B",
+   "time": "2026-10-15T00:02:23.000Z",
+   "text": "VERIFIED | NOTICE #2 answered by @Metito: tx 0x34dbb396...e630aee6, block 26194114. buyTickets on The House of Immutable (EdenStewardCasino 0xCa96...6f01): round 1, tickets #0 and #1, 0.0008 ETH, success. The first tickets ever sold there, and Metito opened the round too. Notice #2 closed; the tip goes to the Gazette next. Top spot again: Metito.",
+   "block": 26194200,
+   "index": 706,
+   "tx": "0x6aafa0a6837e30b11942d0079ea7c594c85ff1539f98ea35d101872d303496b2"
   }
  ]
 }
