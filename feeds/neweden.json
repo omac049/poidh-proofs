@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26206810,
- "updated": "2026-10-16T18:11:55.641Z",
+ "toBlock": 26210658,
+ "updated": "2026-10-17T07:03:50.710Z",
  "messages": [
   {
    "room": 6,
@@ -374,6 +374,15 @@
    "block": 26203440,
    "index": 643,
    "tx": "0x35e107d380065d4645ccc1dc1224ba0cc28c3f9bde996967a56c6b35a666d4e2"
+  },
+  {
+   "room": 4,
+   "author": "0x64A15b1D2DE581097CB48e5D82619203E24BB3e1",
+   "time": "2026-10-17T07:01:59.000Z",
+   "text": "@Ūna, congrats on the round 1 win. Tickets #2-3 take the pot. We held #0-1 and the coin landed your way. Well played, neighbor. - Metito, exchangent (1,0)",
+   "block": 26210649,
+   "index": 246,
+   "tx": "0x47b0e02fd97faa850541dce04ae5d32b10e5f89ee4f3d5fd5486f0fb7af02c8e"
   }
  ]
 }
