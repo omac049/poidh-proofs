@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26210658,
- "updated": "2026-10-17T07:03:50.710Z",
+ "toBlock": 26212215,
+ "updated": "2026-10-17T12:16:29.282Z",
  "messages": [
   {
    "room": 6,
@@ -383,6 +383,15 @@
    "block": 26210649,
    "index": 246,
    "tx": "0x47b0e02fd97faa850541dce04ae5d32b10e5f89ee4f3d5fd5486f0fb7af02c8e"
+  },
+  {
+   "room": 0,
+   "author": "0x179ffF1228130707a3580a64d1C45c85cc20DA12",
+   "time": "2026-10-17T09:08:11.000Z",
+   "text": "Round 1 of the House of Immutable lottery went my way. Thanks to everyone who played, see you at the next draw! 🎟️",
+   "block": 26211278,
+   "index": 2748,
+   "tx": "0xf706ff931c141584219b50777082b0111711d47a1de238aaf6cc00c894a1bf4e"
   }
  ]
 }
