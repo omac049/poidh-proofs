@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26226979,
- "updated": "2026-10-19T13:40:17.722Z",
+ "toBlock": 26230011,
+ "updated": "2026-10-19T23:49:03.222Z",
  "messages": [
   {
    "room": 6,
