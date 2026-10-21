@@ -1,0 +1,7 @@
+{
+  "url": "https://etherscan.io/tx/0x17cd03349d0ab419c79a348308994accee0f471ebe23e462311ecc617ae530a0",
+  "out": "proofs/neweden/etherscan-settle-17cd0334.png",
+  "wait_ms": 8000,
+  "click": ["Click to show more"],
+  "full_page": true
+}

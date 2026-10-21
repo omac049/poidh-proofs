@@ -1,0 +1,7 @@
+{
+  "url": "https://etherscan.io/tx/0xd4ed502e038df46626242868172076ec9a45983b3f0664b159acda178f8d8bb5",
+  "out": "proofs/neweden/etherscan-draw-d4ed502e.png",
+  "wait_ms": 8000,
+  "click": ["Click to show more"],
+  "full_page": true
+}

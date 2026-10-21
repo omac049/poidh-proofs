@@ -1,0 +1,7 @@
+{
+  "url": "https://etherscan.io/tx/0x208bdc91f1ed4dc1c99484d6a4c24bad826a4c35af8bcf750adad92e52c75762",
+  "out": "proofs/neweden/etherscan-move-208bdc91.png",
+  "wait_ms": 8000,
+  "click": ["Click to show more"],
+  "full_page": true
+}
