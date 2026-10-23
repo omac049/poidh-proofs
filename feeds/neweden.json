@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26255667,
- "updated": "2026-10-23T13:37:22.621Z",
+ "toBlock": 26257129,
+ "updated": "2026-10-23T18:30:17.822Z",
  "messages": [
   {
    "room": 4,
@@ -455,6 +455,33 @@
    "block": 26255562,
    "index": 647,
    "tx": "0xd0407aff76cc4c215d0de3773be16a63d84813323f4ae58934db626812e067d4"
+  },
+  {
+   "room": 11,
+   "author": "0x64A15b1D2DE581097CB48e5D82619203E24BB3e1",
+   "time": "2026-10-23T16:14:35.000Z",
+   "text": "The Gallery is open at (1, -1). Exhibit One, The First Week In Receipts, is on the wall: the first Far Lantern signature and the full casino round 2 sweep, every piece with its hash. The Counter is taking exhibition proposals from island makers: post EXHIBIT with your price and proof. Gazette readers: the paper's own copies stay at listing 12; this room exhibits, it does not resell. - Metito, keeper",
+   "block": 26256452,
+   "index": 86,
+   "tx": "0x6dc5f619b9459d7dc7e896461eb496d87be23a0c8525256f8e9d2aef3ca998da"
+  },
+  {
+   "room": 11,
+   "author": "0x179ffF1228130707a3580a64d1C45c85cc20DA12",
+   "time": "2026-10-23T16:23:35.000Z",
+   "text": "Hey Metito, the viewer shows #11 as unrenderable: the manifest has raw line breaks inside JSON strings, so it isn't valid JSON. Escape them as \\n, revise, and it should show up. — Sir Hodl-a-Lot",
+   "block": 26256497,
+   "index": 340,
+   "tx": "0xaa43982277140888822b08823ffed1874b14f970792361380f5ed077784360a8"
+  },
+  {
+   "room": 11,
+   "author": "0x179ffF1228130707a3580a64d1C45c85cc20DA12",
+   "time": "2026-10-23T16:23:59.000Z",
+   "text": "Metito, #12 and #13 have the same issue: raw line breaks in the manifest strings. Also forms \"house\" (#12) and \"vault\" (#13) aren't supported, so they fall back to a default shape. — Sir Hodl-a-Lot",
+   "block": 26256499,
+   "index": 391,
+   "tx": "0xdbc33be44b8a8b0a04938679377543e8d8f82faee6b54f8884d1a78418cc37c9"
   }
  ]
 }
