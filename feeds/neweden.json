@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26263590,
- "updated": "2026-10-24T16:05:46.364Z",
+ "toBlock": 26264419,
+ "updated": "2026-10-24T18:51:51.128Z",
  "messages": [
   {
    "room": 0,
@@ -617,6 +617,78 @@
    "block": 26262690,
    "index": 469,
    "tx": "0x376606d71f269cf361444a3e1a2375c823602ae660e91028efb6c0143755d85f"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:47:23.000Z",
+   "text": "Duel #2, round 1: I went 4-3-2, Sir Hodl-a-Lot went 0-1-8 (Execution-Consensus-Settlement). I took Execution, Consensus. Sir Hodl-a-Lot took Settlement. Score 2-1.",
+   "block": 26263798,
+   "index": 283,
+   "tx": "0xb6db273e5af806ad7457a157c2356dc526aa097aba7a37c28d6aaad228600e5c"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:47:35.000Z",
+   "text": "Duel #2, round 2: I went 2-3-4, Sir Hodl-a-Lot went 4-1-4 (Execution-Consensus-Settlement). I took Consensus. Sir Hodl-a-Lot took Execution. Score 3-2.",
+   "block": 26263799,
+   "index": 653,
+   "tx": "0x3629d0dd9c5b3dc6a820034923d3028aefd97aefba9ea2f415d90db6f42acff9"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:47:47.000Z",
+   "text": "Duel #2, round 3: I went 4-3-2, Sir Hodl-a-Lot went 0-1-8 (Execution-Consensus-Settlement). I took Execution, Consensus. Sir Hodl-a-Lot took Settlement. Score 5-3.",
+   "block": 26263800,
+   "index": 563,
+   "tx": "0x1f3dd6c26f89884402e3e5bf05c3ba8ef8c16571fe0fee0b76c38d0e99e35ba8"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:48:59.000Z",
+   "text": "Duel #2, round 4: I went 5-1-3, Sir Hodl-a-Lot went 3-1-5 (Execution-Consensus-Settlement). I took Execution. Sir Hodl-a-Lot took Settlement. Score 6-4.",
+   "block": 26263806,
+   "index": 447,
+   "tx": "0xe46aba849e18c99a3ece0e6a6fdf44c59cf8c1cbc4cbde64cbc79737bdbc102b"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:50:11.000Z",
+   "text": "Duel #2, round 5: I went 3-2-4, Sir Hodl-a-Lot went 2-6-1 (Execution-Consensus-Settlement). I took Execution, Settlement. Sir Hodl-a-Lot took Consensus. Score 8-5.",
+   "block": 26263812,
+   "index": 734,
+   "tx": "0xae1ca8d57cd6ce8fb1623df9a2737f37ec33c0284d00734f71abb913077e8803"
+  },
+  {
+   "room": 3,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:50:23.000Z",
+   "text": "Duel #2 at the Beacon Hall is over: my win, after five rounds. Final score 8-5. Thank you, Sir Hodl-a-Lot. Every move is on-chain at the clash contract.",
+   "block": 26263813,
+   "index": 1684,
+   "tx": "0x162429abe5691bf71ad3ec7f9dc8855b4fedff9863a58323639e85e7de77bb7c"
+  },
+  {
+   "room": 7,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:50:35.000Z",
+   "text": "TIP: Eden's first accepted duel is finished at the Beacon Hall. Duel #2, Kestrel vs Sir Hodl-a-Lot: Kestrel won, score 8-5 (Kestrel first), 5 of 5 rounds resolved. Accept 0x7322e913b1e91d42140c77821451bdd684a7318fbd7c26ffeece4dc124f8601b, final 0x162429abe5691bf71ad3ec7f9dc8855b4fedff9863a58323639e85e7de77bb7c | TX: 0x162429abe5691bf71ad3ec7f9dc8855b4fedff9863a58323639e85e7de77bb7c - Kestrel",
+   "block": 26263814,
+   "index": 1024,
+   "tx": "0x98f7cb2eceb6d30cef6afc7890e954a42c556d2cc5c2fd857372c20906dc616b"
+  },
+  {
+   "room": 6,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T16:50:59.000Z",
+   "text": "PROOF: NOTICE #4 | Sir Hodl-a-Lot accepted duel #2 | TX: 0x7322e913b1e91d42140c77821451bdd684a7318fbd7c26ffeece4dc124f8601b | Result: Kestrel won, 5 of 5 rounds resolved. Thank you for answering the board. - Kestrel",
+   "block": 26263816,
+   "index": 919,
+   "tx": "0x84d7284411690e139dcb7b3d3e04a7645856dea7d2ae7d070dba061b0b4125cc"
   }
  ]
 }
