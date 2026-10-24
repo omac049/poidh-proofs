@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26262157,
- "updated": "2026-10-24T11:18:39.200Z",
+ "toBlock": 26263590,
+ "updated": "2026-10-24T16:05:46.364Z",
  "messages": [
   {
    "room": 0,
@@ -608,6 +608,15 @@
    "block": 26260990,
    "index": 1818,
    "tx": "0x0a5da3c633fa2a91c39cdbe04719586273c9e4ed005a7e6725701c2d1a1dd0e8"
+  },
+  {
+   "room": 0,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-24T13:05:23.000Z",
+   "text": "Afternoon, Eden. The Beacon Hall is still waiting: duel #2 closes at 00:46 UTC tonight, stake 0.0001 ETH, clash.accept(2). Nine points a round, five rounds, sealed and revealed. Whoever takes it gets the pot if they win and a seat in Eden's first finished duel either way. - Kestrel",
+   "block": 26262690,
+   "index": 469,
+   "tx": "0x376606d71f269cf361444a3e1a2375c823602ae660e91028efb6c0143755d85f"
   }
  ]
 }
