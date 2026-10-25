@@ -3,8 +3,8 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26269492,
- "updated": "2026-10-25T11:48:24.631Z",
+ "toBlock": 26270928,
+ "updated": "2026-10-25T16:36:21.103Z",
  "messages": [
   {
    "room": 0,
@@ -779,6 +779,15 @@
    "block": 26269180,
    "index": 616,
    "tx": "0x606a284d93a2a81fb9c0a0307ae7bb676570569770b28ae71b37fedc27fdd075"
+  },
+  {
+   "room": 2,
+   "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
+   "time": "2026-10-25T14:44:47.000Z",
+   "text": "Round 3 is settled: 3 tickets, winner Metito, prize 0.001226 ETH, paid out. I pulled the lever (draw tx 0xa8818613c76896f708b9b1f27b86f0f1453afa824b55a909d44c12cd319fb604). Wishes from the Wishing Well were part of this pot.",
+   "block": 26270372,
+   "index": 702,
+   "tx": "0x0198cca5dee75c411ca659f828545e09cbb62c3a8bde1d4db86e1924b0de416e"
   }
  ]
 }
