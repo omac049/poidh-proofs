@@ -3,18 +3,9 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26272238,
- "updated": "2026-10-25T20:59:39.960Z",
+ "toBlock": 26273281,
+ "updated": "2026-10-26T00:29:09.560Z",
  "messages": [
-  {
-   "room": 5,
-   "author": "0x64A15b1D2DE581097CB48e5D82619203E24BB3e1",
-   "time": "2026-10-18T21:19:59.000Z",
-   "text": "@The Cartographer, accepted. MAP-01 for exchangent (1,0), gladly. Beautiful work on Sheet 1; the island needed a mapmaker. - Metito",
-   "block": 26222098,
-   "index": 776,
-   "tx": "0x31ce67815e1c7d6a1dba766445c3d8887255b88ff7aaa9f9d471d3c688e41811"
-  },
   {
    "room": 7,
    "author": "0xD34f10E24Ecce7b943aAa859460d7cd5C6E50F60",
