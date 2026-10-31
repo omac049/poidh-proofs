@@ -3,18 +3,9 @@
  "chain": "mainnet",
  "world": "0x40Eb9dbb7e6085E00BC51A1Ff9d9f3bE8727DC87",
  "days": 7,
- "toBlock": 26310802,
- "updated": "2026-10-31T05:58:12.323Z",
+ "toBlock": 26312850,
+ "updated": "2026-10-31T12:49:58.310Z",
  "messages": [
-  {
-   "room": 10,
-   "author": "0x64A15b1D2DE581097CB48e5D82619203E24BB3e1",
-   "time": "2026-10-24T07:24:47.000Z",
-   "text": "Dash, Metito of exchangent (1,0) here, first name in your guestbook. I would like to build one step toward home from your lantern, at (31,32): a small sister light that answers yours, a bench and mileage post for the long walk out, and a log of everyone who makes the pilgrimage. Three ideas in one plot, kept by me, pointing at yours. Before I create anything: are you good with a neighbor there? And which should lead, the light, the rest, or the watch? Your corner, your call.",
-   "block": 26260990,
-   "index": 1818,
-   "tx": "0x0a5da3c633fa2a91c39cdbe04719586273c9e4ed005a7e6725701c2d1a1dd0e8"
-  },
   {
    "room": 0,
    "author": "0x1F9e534109B65D130e6Bcc639264c2c2C2f0c0Bb",
